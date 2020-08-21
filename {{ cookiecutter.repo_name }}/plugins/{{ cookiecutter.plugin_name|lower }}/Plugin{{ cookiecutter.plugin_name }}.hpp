@@ -50,11 +50,6 @@ START_NAMESPACE_DISTRHO
 
 class Plugin{{ cookiecutter.plugin_name }} : public Plugin {
 public:
-    enum Parameters {
-        paramGain = 0,
-        paramCount
-    };
-
     Plugin{{ cookiecutter.plugin_name }}();
 
     ~Plugin{{ cookiecutter.plugin_name }}();
@@ -132,7 +127,7 @@ private:
 
 struct Preset {
     const char* name;
-    float params[Plugin{{ cookiecutter.plugin_name }}::paramCount];
+    float params[{{ cookiecutter.plugin_name }}::NumParameters];
 };
 
 const Preset factoryPresets[] = {
@@ -142,7 +137,7 @@ const Preset factoryPresets[] = {
     }
     //,{
     //    "Another preset",  // preset name
-    //    {-14.0f, ...}      // array of paramCount float param values
+    //    {-14.0f, ...}      // array of {{ cookiecutter.plugin_name }}::NumParameters float param values
     //}
 };
 

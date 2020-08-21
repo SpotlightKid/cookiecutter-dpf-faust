@@ -33,12 +33,12 @@ START_NAMESPACE_DISTRHO
 // -----------------------------------------------------------------------
 
 Plugin{{ cookiecutter.plugin_name }}::Plugin{{ cookiecutter.plugin_name }}()
-    : Plugin(paramCount, presetCount, 0)  // paramCount param(s), presetCount program(s), 0 states
+    : Plugin({{ cookiecutter.plugin_name }}::NumParameters, presetCount, 0)  // # of params, # of programs, 0 states
 {
     dsp = new {{ cookiecutter.plugin_name }};
     fSampleRate = getSampleRate();
 
-    for (unsigned p = 0; p < paramCount; ++p) {
+    for (unsigned p = 0; p < {{ cookiecutter.plugin_name }}::NumParameters; ++p) {
         Parameter param;
         initParameter(p, param);
         setParameterValue(p, param.ranges.def);
@@ -53,7 +53,7 @@ Plugin{{ cookiecutter.plugin_name }}::~Plugin{{ cookiecutter.plugin_name }}() {
 // Init
 
 void Plugin{{ cookiecutter.plugin_name }}::initParameter(uint32_t index, Parameter& parameter) {
-    if (index >= paramCount)
+    if (index >= {{ cookiecutter.plugin_name }}::NumParameters)
         return;
 
     const {{ cookiecutter.plugin_name }}::ParameterRange* range = dsp->parameter_range(index);
@@ -108,7 +108,7 @@ float Plugin{{ cookiecutter.plugin_name }}::getParameterValue(uint32_t index) co
   Change a parameter value.
 */
 void Plugin{{ cookiecutter.plugin_name }}::setParameterValue(uint32_t index, float value) {
-    if (index >= paramCount)
+    if (index >= {{ cookiecutter.plugin_name }}::NumParameters)
         return;
 
     const {{ cookiecutter.plugin_name }}::ParameterRange* range = dsp->parameter_range(index);
@@ -122,7 +122,7 @@ void Plugin{{ cookiecutter.plugin_name }}::setParameterValue(uint32_t index, flo
 */
 void Plugin{{ cookiecutter.plugin_name }}::loadProgram(uint32_t index) {
     if (index < presetCount) {
-        for (int i=0; i < paramCount; i++) {
+        for (int i=0; i < {{ cookiecutter.plugin_name }}::NumParameters; i++) {
             setParameterValue(i, factoryPresets[index].params[i]);
         }
     }
