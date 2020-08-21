@@ -1,4 +1,4 @@
-# cookiecutter-dpf-effect
+# cookiecutter-dpf-faust
 
 A [cookiecutter] project template for DISTRHO Plugin Framework ([DPF]) audio
 effect plugins using [FAUST] for the implementation of the DSP pipeline.
