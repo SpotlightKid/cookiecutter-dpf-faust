@@ -82,7 +82,7 @@ See the `README.md` file in your generated project for more information on
 compiling, prerequisites and how to install the finished plugin(s).
 
 
-# Requirements
+## Requirements
 
 To create a project using this cookie cutter template you need:
 
