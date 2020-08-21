@@ -33,15 +33,18 @@
 #define DISTRHO_PLUGIN_NAME  "{{ cookiecutter.plugin_name }}"
 #define DISTRHO_PLUGIN_URI   "{{ cookiecutter.plugin_uri }}"
 
-#define DISTRHO_PLUGIN_HAS_UI        {{ 0 if cookiecutter.ui_type == "none" else 1 }}
-#define DISTRHO_UI_USE_NANOVG        {{ 1 if cookiecutter.ui_type == "nanovg" else 0 }}
+#define DISTRHO_PLUGIN_HAS_UI        0
+#define DISTRHO_UI_USE_NANOVG        0
 
 #define DISTRHO_PLUGIN_IS_RT_SAFE       1
-#define DISTRHO_PLUGIN_NUM_INPUTS       2
-#define DISTRHO_PLUGIN_NUM_OUTPUTS      2
+#define DISTRHO_PLUGIN_NUM_INPUTS       {{ cookiecutter.num_inputs }}
+#define DISTRHO_PLUGIN_NUM_OUTPUTS      {{ cookiecutter.num_outputs }}
 #define DISTRHO_PLUGIN_WANT_TIMEPOS     0
 #define DISTRHO_PLUGIN_WANT_PROGRAMS    1
-#define DISTRHO_PLUGIN_WANT_MIDI_INPUT  {{ 0 if cookiecutter.want_midi_input == "no" else 1 }}
-#define DISTRHO_PLUGIN_WANT_MIDI_OUTPUT {{ 0 if cookiecutter.want_midi_output == "no" else 1 }}
+#define DISTRHO_PLUGIN_WANT_MIDI_INPUT  0
+#define DISTRHO_PLUGIN_WANT_MIDI_OUTPUT 0
+
+// See http://lv2plug.in/ns/lv2core#ref-classes
+// #define DISTRHO_PLUGIN_LV2_CATEGORY "lv2:AmplifierPlugin"
 
 #endif // DISTRHO_PLUGIN_INFO_H

@@ -1,5 +1,5 @@
 {
-    "project_name": "Simple Gain",
+    "project_name": "DPF FAUST Gain",
     "plugin_description": "A simple audio volume gain plugin",
     "author_name": "Joe Doe",
     "domain": "example.com",
@@ -12,7 +12,10 @@
     "project_license": "MIT",
     "version": "0.1.0",
     "year": "2020",
-    "ui_type": ["opengl", "nanovg", "cairo", "none"],
-    "want_midi_input": ["no", "yes"],
-    "want_midi_output": ["no", "yes"]
+    "num_inputs": 1,
+    "num_outputs": 1,
+    "_copy_without_render": [
+        "faust/arch",
+        "patches"
+    ]
 }

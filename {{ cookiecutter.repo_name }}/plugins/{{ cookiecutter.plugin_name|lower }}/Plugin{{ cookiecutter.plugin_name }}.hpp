@@ -30,7 +30,7 @@
 #define PLUGIN_{{ cookiecutter.plugin_name | upper }}_H
 
 #include "DistrhoPlugin.hpp"
-#include "CParamSmooth.hpp"
+#include "{{ cookiecutter.plugin_name }}.hpp"
 
 START_NAMESPACE_DISTRHO
 
@@ -44,10 +44,6 @@ START_NAMESPACE_DISTRHO
 
 #ifndef CLAMP
 #define CLAMP(v, min, max) (MIN((max), MAX((min), (v))))
-#endif
-
-#ifndef DB_CO
-#define DB_CO(g) ((g) > -90.0f ? powf(10.0f, (g) * 0.05f) : 0.0f)
 #endif
 
 // -----------------------------------------------------------------------
@@ -80,7 +76,7 @@ protected:
     }
 
     const char* getHomePage() const override {
-        return "{{ cookiecutter.plugin_uri }}";
+        return DISTRHO_PLUGIN_URI;
     }
 
     const char* getLicense() const noexcept override {
@@ -123,20 +119,13 @@ protected:
     // Process
 
     void activate() override;
-{% if cookiecutter.want_midi_input == "no" %}
     void run(const float**, float** outputs, uint32_t frames) override;
-{% else %}
-    void run(const float**, float** outputs, uint32_t frames,
-             const MidiEvent* midiEvents, uint32_t midiEventCount) override;
-{% endif %}
 
     // -------------------------------------------------------------------
 
 private:
-    float           fParams[paramCount];
     double          fSampleRate;
-    float           gain;
-    CParamSmooth    *smooth_gain;
+    {{ cookiecutter.plugin_name }}*     dsp;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Plugin{{ cookiecutter.plugin_name }})
 };
@@ -148,12 +137,12 @@ struct Preset {
 
 const Preset factoryPresets[] = {
     {
-        "Unity Gain",
-        {0.0f}
+        "Default",
+        {-6.0f,}
     }
     //,{
     //    "Another preset",  // preset name
-    //    {-14.0f, ...}      // array of presetCount float param values
+    //    {-14.0f, ...}      // array of paramCount float param values
     //}
 };
 

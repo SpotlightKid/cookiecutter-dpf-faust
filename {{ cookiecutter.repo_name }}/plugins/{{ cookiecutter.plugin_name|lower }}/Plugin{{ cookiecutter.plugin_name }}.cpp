@@ -35,7 +35,8 @@ START_NAMESPACE_DISTRHO
 Plugin{{ cookiecutter.plugin_name }}::Plugin{{ cookiecutter.plugin_name }}()
     : Plugin(paramCount, presetCount, 0)  // paramCount param(s), presetCount program(s), 0 states
 {
-    smooth_gain = new CParamSmooth(20.0f, getSampleRate());
+    dsp = new {{ cookiecutter.plugin_name }};
+    fSampleRate = getSampleRate();
 
     for (unsigned p = 0; p < paramCount; ++p) {
         Parameter param;
@@ -45,7 +46,7 @@ Plugin{{ cookiecutter.plugin_name }}::Plugin{{ cookiecutter.plugin_name }}()
 }
 
 Plugin{{ cookiecutter.plugin_name }}::~Plugin{{ cookiecutter.plugin_name }}() {
-    delete smooth_gain;
+    delete dsp;
 }
 
 // -----------------------------------------------------------------------
@@ -55,19 +56,24 @@ void Plugin{{ cookiecutter.plugin_name }}::initParameter(uint32_t index, Paramet
     if (index >= paramCount)
         return;
 
-    parameter.ranges.min = -90.0f;
-    parameter.ranges.max = 30.0f;
-    parameter.ranges.def = -0.0f;
-    parameter.unit = "db";
+    const {{ cookiecutter.plugin_name }}::ParameterRange* range = dsp->parameter_range(index);
+    parameter.name = dsp->parameter_label(index);
+    parameter.shortName = dsp->parameter_short_label(index);
+    parameter.symbol = dsp->parameter_symbol(index);
+    parameter.unit = dsp->parameter_unit(index);
+    parameter.ranges.min = range->min;
+    parameter.ranges.max = range->max;
+    parameter.ranges.def = range->init;
     parameter.hints = kParameterIsAutomable;
 
-    switch (index) {
-        case paramGain:
-            parameter.name = "Gain (dB)";
-            parameter.shortName = "Gain";
-            parameter.symbol = "gain";
-            break;
-    }
+    if (dsp->parameter_is_boolean(index))
+        parameter.hints |= kParameterIsBoolean;
+    if (dsp->parameter_is_integer(index))
+        parameter.hints |= kParameterIsInteger;
+    if (dsp->parameter_is_logarithmic(index))
+        parameter.hints |= kParameterIsLogarithmic;
+    if (dsp->parameter_is_trigger(index))
+        parameter.hints |= kParameterIsTrigger;
 }
 
 /**
@@ -88,27 +94,25 @@ void Plugin{{ cookiecutter.plugin_name }}::initProgramName(uint32_t index, Strin
 */
 void Plugin{{ cookiecutter.plugin_name }}::sampleRateChanged(double newSampleRate) {
     fSampleRate = newSampleRate;
-    smooth_gain->setSampleRate(newSampleRate);
+    dsp->init(newSampleRate);
 }
 
 /**
   Get the current value of a parameter.
 */
 float Plugin{{ cookiecutter.plugin_name }}::getParameterValue(uint32_t index) const {
-    return fParams[index];
+    return dsp->get_parameter(index);
 }
 
 /**
   Change a parameter value.
 */
 void Plugin{{ cookiecutter.plugin_name }}::setParameterValue(uint32_t index, float value) {
-    fParams[index] = value;
+    if (index >= paramCount)
+        return;
 
-    switch (index) {
-        case paramGain:
-            gain = DB_CO(CLAMP(fParams[paramGain], -90.0, 30.0));
-            break;
-    }
+    const {{ cookiecutter.plugin_name }}::ParameterRange* range = dsp->parameter_range(index);
+    dsp->set_parameter(index, CLAMP(value, range->min, range->max));
 }
 
 /**
@@ -127,33 +131,18 @@ void Plugin{{ cookiecutter.plugin_name }}::loadProgram(uint32_t index) {
 // -----------------------------------------------------------------------
 // Process
 
+/**
+  Plugin is activated.
+*/
 void Plugin{{ cookiecutter.plugin_name }}::activate() {
-    // plugin is activated
+    fSampleRate = getSampleRate();
+    dsp->init(fSampleRate);
 }
 
 {% set indent = " " * (cookiecutter.plugin_name | length + 17) %}
-{% if cookiecutter.want_midi_input == "no" %}
 void Plugin{{ cookiecutter.plugin_name }}::run(const float** inputs, float** outputs,
 {{ indent }}uint32_t frames) {
-{% else %}
-void Plugin{{ cookiecutter.plugin_name }}::run(const float** inputs, float** outputs,
-{{ indent }}uint32_t frames,
-{{ indent }}const MidiEvent* midiEvents, uint32_t midiEventCount) {
-{% endif %}
-    // get the left and right audio inputs
-    const float* const inpL = inputs[0];
-    const float* const inpR = inputs[1];
-
-    // get the left and right audio outputs
-    float* const outL = outputs[0];
-    float* const outR = outputs[1];
-
-    // apply gain against all samples
-    for (uint32_t i=0; i < frames; ++i) {
-        float gainval = smooth_gain->process(gain);
-        outL[i] = inpL[i] * gainval;
-        outR[i] = inpR[i] * gainval;
-    }
+    dsp->process({% for i in range(cookiecutter.num_inputs | int) %}inputs[{{ i }}], {% endfor %}{% for i in range(cookiecutter.num_outputs | int) %}outputs[{{ i }}], {% endfor %}(unsigned)frames);
 }
 
 // -----------------------------------------------------------------------

@@ -11,15 +11,16 @@ all: libs plugins gen
 # --------------------------------------------------------------
 
 submodules:
-	git submodule update --init --recursive
+	-test -d .gitmodules && git submodule update --init --recursive
 
-libs:
-{%- if cookiecutter.ui_type != "none" %}
-	$(MAKE) -C dpf/dgl {{ "../build/libdgl-cairo.a" if cookiecutter.ui_type == "cairo" else "../build/libdgl-opengl.a" }}
-{%- endif %}
+libs: patch
+
+patch:
+	-patch -d dpf -r - -p1 -N -i ../patches/dpf/no-port-name-lv2-prefix.patch
+	-patch -d dpf -r - -p1 -N -i ../patches/dpf/fix-lv2-version-export.patch
 
 plugins: libs
-	$(MAKE) all -C plugins/{{ cookiecutter.plugin_name }}
+	$(MAKE) all -C plugins/{{ cookiecutter.plugin_name|lower }}
 
 ifneq ($(CROSS_COMPILING),true)
 gen: plugins dpf/utils/lv2_ttl_generator
@@ -40,20 +41,22 @@ endif
 
 # --------------------------------------------------------------
 
-clean:
-{%- if cookiecutter.ui_type != "none" %}
-	$(MAKE) clean -C dpf/dgl
-{%- endif %}
-	$(MAKE) clean -C dpf/utils/lv2-ttl-generator
-	$(MAKE) clean -C plugins/{{ cookiecutter.plugin_name }}
-	rm -rf bin build
-
-install: all
-	$(MAKE) install -C plugins/{{ cookiecutter.plugin_name }}
-
-install-user: all
-	$(MAKE) install-user -C plugins/{{ cookiecutter.plugin_name }}
+lv2lint:
+	$(MAKE) lv2lint -C plugins/{{ cookiecutter.plugin_name|lower }}
 
 # --------------------------------------------------------------
 
-.PHONY: all clean install install-user submodule libs plugins gen
+clean:
+	$(MAKE) clean -C dpf/utils/lv2-ttl-generator
+	$(MAKE) clean -C plugins/{{ cookiecutter.plugin_name|lower }}
+	rm -rf bin build
+
+install: all
+	$(MAKE) install -C plugins/{{ cookiecutter.plugin_name|lower }}
+
+install-user: all
+	$(MAKE) install-user -C plugins/{{ cookiecutter.plugin_name|lower }}
+
+# --------------------------------------------------------------
+
+.PHONY: all clean faust gen install install-user libs lv2lint patch plugins submodule

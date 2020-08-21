@@ -7,6 +7,10 @@
 # --------------------------------------------------------------
 # Installation directories
 
+DISTRHO_PLUGIN_URI = $(shell grep DISTRHO_PLUGIN_URI DistrhoPluginInfo.h | cut -d '"' -f 2)
+FAUST_DSP_DIR ?= ../../faust
+FAUST_ARCH_DIR ?= $(FAUST_DSP_DIR)/arch
+
 PREFIX ?= /usr/local
 BINDIR ?= $(PREFIX)/bin
 LIBDIR ?= $(PREFIX)/lib
@@ -46,42 +50,35 @@ endif
 NAME = {{ cookiecutter.plugin_name | lower }}
 
 # --------------------------------------------------------------
+# FAUST DSP source
+FAUST_DSP_SOURCE = $(FAUST_DSP_DIR)/$(NAME).dsp
+FAUST_IDENTIFIER := $(shell grep 'declare name' $(FAUST_DSP_SOURCE) | cut -f 2 -d '"')
+
+# --------------------------------------------------------------
 # Plugin types to build
 
 BUILD_LV2 ?= true
 BUILD_VST2 ?= true
-BUILD_JACK ?= true
+BUILD_JACK ?= false
 BUILD_DSSI ?= false
-BUILD_LADSPA ?= {{ "true" if cookiecutter.ui_type == "none" and
-                             cookiecutter.want_midi_input == "no" and
-                             cookiecutter.want_midi_output == "no"
-                          else "false" }}
+BUILD_LADSPA ?= true
 
 # --------------------------------------------------------------
 # Files to build
 
 FILES_DSP = \
+	$(FAUST_IDENTIFIER).cpp \
 	Plugin{{ cookiecutter.plugin_name }}.cpp
-{% if cookiecutter.ui_type != "none" %}
-FILES_UI = \
-	UI{{ cookiecutter.plugin_name }}.cpp
-{% endif %}
+
 # --------------------------------------------------------------
 # Do some magic
-{% if cookiecutter.ui_type != "none" %}
-UI_TYPE = {{ "cairo" if cookiecutter.ui_type == "cairo" else "opengl" }}
-{%- endif %}
 include ../../dpf/Makefile.plugins.mk
 
 # --------------------------------------------------------------
 # Enable all selected plugin types
 
 ifeq ($(BUILD_LV2),true)
-ifeq ($(HAVE_{{ "CAIRO" if cookiecutter.ui_type == "cairo" else "DGL" }}),true)
-TARGETS += lv2_sep
-else
 TARGETS += lv2_dsp
-endif
 endif
 
 ifeq ($(BUILD_VST2),true)
@@ -94,26 +91,33 @@ TARGETS += jack
 endif
 endif
 
-ifeq ($(BUILD_DSSI),true)
-ifneq ($(MACOS_OR_WINDOWS),true)
-ifeq ($(HAVE_{{ "CAIRO" if cookiecutter.ui_type == "cairo" else "DGL" }}),true)
-ifeq ($(HAVE_LIBLO),true)
-TARGETS += dssi
-endif
-endif
-endif
-endif
-
 ifeq ($(BUILD_LADSPA),true)
 TARGETS += ladspa
 endif
 
+# --------------------------------------------------------------
+# Make targets
+
 all: $(TARGETS)
+
+# --------------------------------------------------------------
+# Generate C++ source & header from FAUST DSP source
+
+$(BUILD_DIR)/$(FAUST_IDENTIFIER).cpp.o: $(FAUST_IDENTIFIER).hpp $(FAUST_IDENTIFIER).cpp
+
+$(FAUST_IDENTIFIER).cpp: $(FAUST_DSP_SOURCE)
+	faustpp -DIdentifier=$(FAUST_IDENTIFIER) -a $(FAUST_ARCH_DIR)/generic.cpp $< > $@
+
+$(FAUST_IDENTIFIER).hpp: $(FAUST_DSP_SOURCE)
+	faustpp -DIdentifier=$(FAUST_IDENTIFIER) -a $(FAUST_ARCH_DIR)/generic.hpp $< > $@
+
+# --------------------------------------------------------------
+# Installation
 
 install: all
 ifeq ($(BUILD_DSSI),true)
 ifneq ($(MACOS_OR_WINDOWS),true)
-ifeq ($(HAVE_{{ "CAIRO" if cookiecutter.ui_type == "cairo" else "DGL" }}),true)
+ifeq ($(HAVE_DGL),true)
 ifeq ($(HAVE_LIBLO),true)
 	@mkdir -p -m755 $(DESTDIR)$(DSSI_DIR) && \
 	  install -m755 $(TARGET_DIR)/$(NAME)-dssi$(LIB_EXT) $(DESTDIR)$(DSSI_DIR)
@@ -144,7 +148,7 @@ endif
 install-user: all
 ifeq ($(BUILD_DSSI),true)
 ifneq ($(MACOS_OR_WINDOWS),true)
-ifeq ($(HAVE_{{ "CAIRO" if cookiecutter.ui_type == "cairo" else "DGL" }}),true)
+ifeq ($(HAVE_DGL),true)
 ifeq ($(HAVE_LIBLO),true)
 	@mkdir -p -m755 $(USER_DSSI_DIR) && \
 	  install -m755 $(TARGET_DIR)/$(NAME)-dssi$(LIB_EXT) $(USER_DSSI_DIR)
@@ -174,4 +178,11 @@ endif
 
 # --------------------------------------------------------------
 
-.PHONY: all install install-user
+lv2lint:
+	@echo "Please make sure you have the https://github.com/KXStudio/LV2-Extensions bundles"
+	@echo "installed somewhere on your LV2_PATH."
+	lv2lint -s lv2_generate_ttl $(DISTRHO_PLUGIN_URI)
+
+# --------------------------------------------------------------
+
+.PHONY: all install install-user lv2lint
