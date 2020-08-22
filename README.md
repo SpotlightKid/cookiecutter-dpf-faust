@@ -3,6 +3,8 @@
 A [cookiecutter] project template for DISTRHO Plugin Framework ([DPF]) audio
 effect plugins using [FAUST] for the implementation of the DSP pipeline.
 
+[![quickstart asciicast](https://asciinema.org/a/355004.png)](https://asciinema.org/a/355004?speed=2&&theme=monokai&autoplay=1)
+
 ## Quickstart
 
 To create a DPF effect plugin using this template, install cookiecutter (see
