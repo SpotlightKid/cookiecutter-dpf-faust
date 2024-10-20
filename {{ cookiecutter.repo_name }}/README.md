@@ -101,7 +101,7 @@ with the [cookiecutter-dpf-faust] project template.
 [cookiecutter-dpf-faust]: https://github.com/SpotlightKid/cookiecutter-dpf-faust
 [DPF]: https://github.com/DISTRHO/DPF
 [FAUST]: https://faust.grame.fr/
-[faustpp]: https://github.com/jpcima/faustpp.git
+[faustpp]: https://github.com/jpcima/faustpp
 [LADSPA]: http://www.ladspa.org/
 [LV2]: http://lv2plug.in/
 [pkgconf]: https://github.com/pkgconf/pkgconf

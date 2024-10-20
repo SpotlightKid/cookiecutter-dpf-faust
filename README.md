@@ -121,4 +121,4 @@ file in the same dierctory.
 [DPF]: https://github.com/DISTRHO/DPF
 [installation instructions]: http://cookiecutter.readthedocs.org/en/latest/installation.html
 [FAUST]: https://faust.grame.fr/
-[faustpp]: https://github.com/jpcima/faustpp.git
+[faustpp]: https://github.com/jpcima/faustpp
