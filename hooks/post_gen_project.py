@@ -25,5 +25,5 @@ call(['git', 'commit', '-m', 'Initial commit'])
 
 print("\nYour DPF/FAUST audio effect plugin project is now ready!")
 print("To compile it, change into the '{{ cookiecutter.repo_name }}' directory and type 'make'.")
-print("The plugin binaries and LV2 bundle will be placed in the 'bin' subdirectory.")
+print("The plugin binaries and bundles will be placed in the 'bin' subdirectory.")
 print("Have fun!")
