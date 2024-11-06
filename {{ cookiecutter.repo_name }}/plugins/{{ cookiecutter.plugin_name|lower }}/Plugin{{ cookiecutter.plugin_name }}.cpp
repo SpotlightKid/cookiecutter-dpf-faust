@@ -64,7 +64,7 @@ void Plugin{{ cookiecutter.plugin_name }}::initParameter(uint32_t index, Paramet
     parameter.ranges.min = range->min;
     parameter.ranges.max = range->max;
     parameter.ranges.def = range->init;
-    parameter.hints = kParameterIsAutomable;
+    parameter.hints = kParameterIsAutomatable;
 
     if (dsp->parameter_is_boolean(index))
         parameter.hints |= kParameterIsBoolean;
