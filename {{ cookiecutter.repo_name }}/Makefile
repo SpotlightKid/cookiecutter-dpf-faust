@@ -127,7 +127,7 @@ lv2lint: gen
 	@for plug in $(PLUGINS); do \
 		plugin_uri="$$(grep DISTRHO_PLUGIN_URI plugins/$$plug/DistrhoPluginInfo.h | cut -d '"' -f 2)"; \
 		lv2lint -Mpack -q -s lv2_generate_ttl -t "Plugin Author Email" \
-		-I bin/$${plug,,}.lv2/ "$$plugin_uri"; \
+			-I bin/$${plug,,}.lv2/ "$$plugin_uri"; \
 	done
 
 # --------------------------------------------------------------
